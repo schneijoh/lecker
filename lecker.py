@@ -2,56 +2,99 @@ import streamlit as st
 from ultralytics import YOLO
 from PIL import Image
 import numpy as np
+import random
 
-# 🎨 Überraschungs-Design (dark + neon glow)
+# 🎨 Design
 st.markdown("""
-    <style>
-    .stApp {
-        background: linear-gradient(135deg, #0f172a, #020617);
-        color: #e2e8f0;
-    }
+<style>
+.stApp {
+    background: linear-gradient(120deg, #1e293b, #0f172a);
+    color: #e2e8f0;
+}
 
-    h1, h2, h3 {
-        color: #38bdf8;
-        text-align: left;
-    }
+/* Linksbündig */
+h1, h2, h3 {
+    text-align: left;
+    color: #22d3ee;
+}
 
-    .herrscher {
-        font-size: 22px;
-        font-weight: bold;
-        color: #facc15;
-        margin-bottom: 20px;
-    }
+.herrscher {
+    font-size: 22px;
+    font-weight: bold;
+    color: #fbbf24;
+}
 
-    /* Glow Effekt */
-    .glow {
-        color: #38bdf8;
-        text-shadow: 0 0 10px #38bdf8, 0 0 20px #0ea5e9;
-    }
+/* Ballon Animation */
+.balloon {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    animation: floatUp 5s linear forwards;
+}
 
-    /* Fake Feuerwerk (sanfte Animation) */
-    @keyframes glowPulse {
-        0% { box-shadow: 0 0 5px #38bdf8; }
-        50% { box-shadow: 0 0 25px #38bdf8; }
-        100% { box-shadow: 0 0 5px #38bdf8; }
-    }
+@keyframes floatUp {
+    0% { bottom: -100px; opacity: 0; }
+    50% { opacity: 1; }
+    100% { bottom: 100vh; opacity: 0; }
+}
 
-    .firework {
-        animation: glowPulse 2s infinite;
-        border-radius: 10px;
-        padding: 10px;
-    }
-    </style>
+/* Fake Feuerwerk */
+.firework {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: explode 1s ease-out forwards;
+}
+
+@keyframes explode {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(15); opacity: 0; }
+}
+</style>
 """, unsafe_allow_html=True)
 
 # 👑 Begrüßung
-st.title("YOLOv8 Analyse-System")
+st.title("YOLOv8 System")
 st.markdown('<div class="herrscher">Willkommen, Herrscher 👑</div>', unsafe_allow_html=True)
 
-# 🎆 Feuerwerk Button
-if st.button("🎆 Feuerwerk aktivieren, Herrscher"):
-    st.markdown('<div class="firework">✨ Das System feiert Euch, Herrscher ✨</div>', unsafe_allow_html=True)
-    st.balloons()
+# 🎆 Funktionen
+def show_firework():
+    colors = ["#ff0000", "#00ffcc", "#ffff00", "#ff00ff", "#00ff00"]
+    html = ""
+    for _ in range(20):
+        x = random.randint(0, 100)
+        y = random.randint(0, 100)
+        color = random.choice(colors)
+        html += f'<div class="firework" style="left:{x}vw; top:{y}vh; background:{color};"></div>'
+    st.markdown(html, unsafe_allow_html=True)
+
+def show_balloon(text):
+    st.markdown(f'<div class="balloon">🎈 {text}</div>', unsafe_allow_html=True)
+
+# 🎮 Buttons
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("drück mich herrscher"):
+        show_balloon("I love Thore ❤️")
+
+with col2:
+    if st.button("i love informatik"):
+        show_balloon("Informatik ist Liebe 💻❤️")
+
+with col3:
+    if st.button("überraschung"):
+        if random.choice([True, False]):
+            show_firework()
+        else:
+            show_balloon("👑 Du bist legendär, Herrscher")
+
+# Extra Feuerwerk Button
+if st.button("🎆 Feuerwerk, Herrscher"):
+    show_firework()
 
 # Modell laden
 @st.cache_resource
@@ -68,7 +111,6 @@ if uploaded_file is not None:
     st.image(image, caption="Euer Bild", use_column_width=True)
 
     img_array = np.array(image)
-
     results = model(img_array)
 
     result_img = results[0].plot()
@@ -76,17 +118,18 @@ if uploaded_file is not None:
 
     st.subheader("Ergebnis, Herrscher:")
 
-    # ❗ Immer eine Vermutung
     if len(results[0].boxes) == 0:
-        st.write("👁️ Herrscher, meine Vermutung: Es könnte ein Objekt außerhalb meines Trainings sein, möglicherweise ein ungewöhnlicher Gegenstand.")
+        st.write("👁️ Herrscher, meine Vermutung: Es könnte ein unbekanntes oder ungewöhnliches Objekt sein.")
     else:
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
             conf = float(box.conf[0])
             label = model.names[cls_id]
 
-            # KEIN unsicher mehr – nur Vermutung
-            st.write(f"👁️ Herrscher, meine Analyse: Dies ist vermutlich **{label}** ({conf:.2f})")
+            if conf >= 0.5:
+                st.write(f"👑 Herrscher, das ist **{label}** ({conf:.2f})")
+            else:
+                st.write(f"🤔 Herrscher, ich vermute, es könnte **{label}** sein ({conf:.2f})")
 
 else:
-    st.info("Herrscher, ladet ein Bild hoch, damit ich analysieren kann 👁️")
+    st.info("Herrscher, ladet ein Bild hoch 👁️")
