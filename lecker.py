@@ -11,8 +11,38 @@ import time
 if "opened" not in st.session_state:
     st.session_state.opened = False
 
+if "loaded" not in st.session_state:
+    st.session_state.loaded = False
+
 # ---------------------------
-# 📖 BOOK STARTSCREEN
+# 📦 LOADING SCREEN (kein Code sichtbar!)
+# ---------------------------
+if not st.session_state.loaded:
+
+    st.markdown("""
+    <style>
+    .stApp {
+        background: #2b1d0e;
+    }
+
+    .loader {
+        margin-top: 35vh;
+        text-align: center;
+        font-size: 40px;
+        color: #f5e6c8;
+        font-family: serif;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="loader">⏳ warte kurz goty...</div>', unsafe_allow_html=True)
+
+    time.sleep(2)
+    st.session_state.loaded = True
+    st.rerun()
+
+# ---------------------------
+# 📖 BOOK START
 # ---------------------------
 if not st.session_state.opened:
 
@@ -30,7 +60,6 @@ if not st.session_state.opened:
         background: linear-gradient(135deg, #d6c1a3, #b89b73);
         border: 4px solid #5a3e1b;
         border-radius: 15px;
-        box-shadow: 0 0 40px rgba(0,0,0,0.7);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -43,20 +72,12 @@ if not st.session_state.opened:
     .title {
         font-size: 50px;
         font-weight: bold;
-        letter-spacing: 3px;
-    }
-
-    .subtitle {
-        font-size: 18px;
-        margin-top: 10px;
     }
 
     button {
-        margin-top: 30px !important;
+        margin-top: 25px !important;
         background: #8b6b3f !important;
-        color: #fff !important;
-        border-radius: 8px !important;
-        font-size: 18px !important;
+        color: white !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -64,7 +85,7 @@ if not st.session_state.opened:
     st.markdown("""
     <div class="book">
         <div class="title">FUNDGRUBE</div>
-        <div class="subtitle">Altes Wissen, verborgen in der Tiefe der Zeit</div>
+        <p>Altes Wissen erwacht...</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -75,14 +96,14 @@ if not st.session_state.opened:
     st.stop()
 
 # ---------------------------
-# 🎆 FEUERWERK ÜBERGANG
+# 🎆 FUNKTIONEN
 # ---------------------------
-placeholder = st.empty()
+firework_placeholder = st.empty()
 
 def firework():
-    colors = ["#ffcc00", "#ff6600", "#ffffff", "#ff0000", "#00ffff"]
+    colors = ["#ffcc00", "#ff0000", "#00ffff", "#ff00ff", "#ffffff"]
     html = ""
-    for _ in range(30):
+    for _ in range(25):
         x = random.randint(0, 100)
         y = random.randint(0, 100)
         color = random.choice(colors)
@@ -106,52 +127,71 @@ def firework():
     }
     </style>
     """
-    placeholder.markdown(html, unsafe_allow_html=True)
+    firework_placeholder.markdown(html, unsafe_allow_html=True)
 
-if "firework_done" not in st.session_state:
-    st.session_state.firework_done = True
-    for _ in range(8):
-        firework()
-        time.sleep(1)
-    placeholder.empty()
+def love_text():
+    st.markdown("""
+    <div style="
+        position:fixed;
+        top:40vh;
+        left:50%;
+        transform:translateX(-50%);
+        font-size:40px;
+        font-family:serif;
+        color:#5a3e1b;
+        animation: fade 3s ease-out;">
+        ❤️ ich liebe sie ❤️
+    </div>
+
+    <style>
+    @keyframes fade {
+        0% {opacity:0;}
+        20% {opacity:1;}
+        80% {opacity:1;}
+        100% {opacity:0;}
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+def sound_text():
+    st.markdown("""
+    <div style="
+        text-align:center;
+        font-size:35px;
+        color:#5a3e1b;
+        font-family:serif;">
+        🎵 johan ist der goat 🎵
+    </div>
+    """, unsafe_allow_html=True)
+    time.sleep(5)
 
 # ---------------------------
-# 📖 FUNDGRUBE DESIGN (MAIN APP)
+# 📖 FUNDGRUBE DESIGN
 # ---------------------------
 st.markdown("""
 <style>
 .stApp {
-    background: #e6d3b3; /* altes Papier */
+    background: #e6d3b3;
     color: #2c1f14;
     font-family: serif;
 }
 
 .block-container {
     text-align: left;
-    padding-top: 2rem;
 }
 
-/* Titel */
 h1, h2, h3 {
     color: #5a3e1b;
 }
 
-/* Herrscher Stil */
 .herrscher {
     font-size: 22px;
     font-weight: bold;
-    color: #3b2a1a;
 }
 
-/* Buttons altmodisch */
 .stButton > button {
     background-color: #8b6b3f;
     color: white;
-    border-radius: 6px;
-    border: none;
-}
-.stButton > button:hover {
-    background-color: #6f5330;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -169,23 +209,36 @@ def load_model():
 model = load_model()
 
 # ---------------------------
-# UPLOAD
+# 🎮 EXTRA BUTTONS
 # ---------------------------
-uploaded_file = st.file_uploader("Eintrag in die Fundgrube laden", type=["jpg", "jpeg", "png"])
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("klicken sie"):
+        firework()
+        love_text()
+
+with col2:
+    if st.button("sound"):
+        sound_text()
+
+# ---------------------------
+# UPLOAD + YOLO
+# ---------------------------
+uploaded_file = st.file_uploader("Eintrag in die Fundgrube", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, use_column_width=True)
 
-    img_array = np.array(image)
-    results = model(img_array)
+    results = model(np.array(image))
 
     st.image(results[0].plot(), use_column_width=True)
 
-    st.subheader("Deutung des Fundes, Herrscher:")
+    st.subheader("Deutung, Herrscher:")
 
     if len(results[0].boxes) == 0:
-        st.write("📜 Herrscher, ich deute: Ein unbekanntes Artefakt der Fundgrube.")
+        st.write("📜 Herrscher, unbekannter Fund.")
     else:
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
@@ -193,10 +246,9 @@ if uploaded_file is not None:
             label = model.names[cls_id]
 
             if conf >= 0.5:
-                st.write(f"📖 Herrscher, eindeutig erkannt: **{label}** ({conf:.2f})")
+                st.write(f"📖 eindeutig: **{label}** ({conf:.2f})")
             else:
-                st.write(f"📜 Herrscher, Deutung: vermutlich **{label}** ({conf:.2f})")
+                st.write(f"📜 vermutlich: **{label}** ({conf:.2f})")
 
 else:
-    st.info("Herrscher, fügt einen Eintrag zur Fundgrube hinzu 📖")
-    
+    st.info("Herrscher, bitte einen Fund einreichen 📖")
