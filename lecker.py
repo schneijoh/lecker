@@ -4,15 +4,15 @@ from PIL import Image
 import numpy as np
 import random
 
-# 🎨 Kontrastreiches Design (besser lesbar + linksbündig)
+# 🎨 DESIGN (babyblau + lesbar + linksbündig)
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-    color: #f1f5f9;
+    background: #e7f5ff;
+    color: #0f172a;
 }
 
-/* Alles links */
+/* Layout links */
 .block-container {
     padding-top: 2rem;
     text-align: left;
@@ -20,18 +20,29 @@ st.markdown("""
 
 /* Überschriften */
 h1, h2, h3 {
-    color: #38bdf8;
+    color: #1c7ed6;
     text-align: left;
 }
 
-/* Herrscher Style */
+/* Herrscher Text */
 .herrscher {
     font-size: 22px;
     font-weight: bold;
-    color: #fbbf24;
+    color: #0b7285;
 }
 
-/* Boxen besser sichtbar */
+/* Buttons */
+.stButton > button {
+    background-color: #74c0fc;
+    color: #0b2239;
+    border-radius: 10px;
+    border: none;
+}
+.stButton > button:hover {
+    background-color: #4dabf7;
+}
+
+/* kleine Kartenoptik */
 .stAlert {
     border-radius: 10px;
 }
@@ -39,10 +50,10 @@ h1, h2, h3 {
 """, unsafe_allow_html=True)
 
 # 👑 Begrüßung
-st.title("YOLOv8 System")
+st.title("YOLOv8 Objekterkennung")
 st.markdown('<div class="herrscher">Willkommen, Herrscher 👑</div>', unsafe_allow_html=True)
 
-# 🎆 Effekte
+# 🎆 FEUERWERK
 def show_firework():
     colors = ["#ff0000", "#00ffcc", "#ffff00", "#ff00ff", "#00ff00"]
     html = ""
@@ -50,17 +61,29 @@ def show_firework():
         x = random.randint(0, 100)
         y = random.randint(0, 100)
         color = random.choice(colors)
-        html += f'<div style="position:fixed; left:{x}vw; top:{y}vh; width:8px; height:8px; background:{color}; border-radius:50%; animation: explode 1s ease-out;"></div>'
+        html += f"""
+        <div style="
+            position:fixed;
+            left:{x}vw;
+            top:{y}vh;
+            width:8px;
+            height:8px;
+            background:{color};
+            border-radius:50%;
+            animation: explode 1s ease-out forwards;">
+        </div>
+        """
     html += """
     <style>
     @keyframes explode {
-        from {transform: scale(1); opacity:1;}
-        to {transform: scale(12); opacity:0;}
+        0% {transform: scale(1); opacity:1;}
+        100% {transform: scale(12); opacity:0;}
     }
     </style>
     """
     st.markdown(html, unsafe_allow_html=True)
 
+# 🎈 BALLOON
 def show_balloon(text):
     st.markdown(f"""
     <div style="
@@ -82,7 +105,7 @@ def show_balloon(text):
     </style>
     """, unsafe_allow_html=True)
 
-# 🎮 Buttons
+# 🎮 BUTTONS
 col1, col2, col3 = st.columns(3)
 
 with col1:
@@ -103,18 +126,18 @@ with col3:
 if st.button("🎆 Feuerwerk, Herrscher"):
     show_firework()
 
-# Modell laden
+# 🤖 MODEL
 @st.cache_resource
 def load_model():
     return YOLO("yolov8n.pt")
 
 model = load_model()
 
-# Speicher für Feedback (Session)
-if "feedback_list" not in st.session_state:
-    st.session_state.feedback_list = []
+# 🧠 FEEDBACK SPEICHER
+if "feedback" not in st.session_state:
+    st.session_state.feedback = []
 
-# Upload
+# 📤 UPLOAD
 uploaded_file = st.file_uploader("Bild hochladen, Herrscher", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
@@ -129,12 +152,13 @@ if uploaded_file is not None:
 
     st.subheader("Ergebnis, Herrscher:")
 
-    prediction_texts = []
+    predictions = []
 
     if len(results[0].boxes) == 0:
-        text = "👁️ Herrscher, meine Vermutung: Ein unbekanntes Objekt."
+        text = "👁️ Herrscher, ich vermute ein unbekanntes Objekt."
         st.write(text)
-        prediction_texts.append(text)
+        predictions.append(text)
+
     else:
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
@@ -144,27 +168,27 @@ if uploaded_file is not None:
             if conf >= 0.5:
                 text = f"👑 Herrscher, das ist **{label}** ({conf:.2f})"
             else:
-                text = f"🤔 Herrscher, ich vermute, es könnte **{label}** sein ({conf:.2f})"
+                text = f"🤔 Herrscher, ich vermute: **{label}** ({conf:.2f})"
 
             st.write(text)
-            prediction_texts.append(text)
+            predictions.append(text)
 
-    # 🧠 Feedback Bereich
-    st.markdown("### 🧠 Feedback geben, Herrscher")
+    # 🧠 FEEDBACK
+    st.markdown("### 🧠 Feedback, Herrscher")
 
-    feedback = st.text_input("Was wäre die richtige Lösung gewesen?")
+    user_feedback = st.text_input("Was war wirklich richtig?")
 
     if st.button("Feedback speichern"):
-        st.session_state.feedback_list.append({
-            "prediction": prediction_texts,
-            "feedback": feedback
+        st.session_state.feedback.append({
+            "prediction": predictions,
+            "correct_answer": user_feedback
         })
         st.success("Feedback gespeichert, Herrscher 👑")
 
-    # Anzeigen gespeicherter Daten
-    if st.session_state.feedback_list:
-        st.markdown("### 📚 Gesammeltes Wissen")
-        st.write(st.session_state.feedback_list)
+    # 📚 DATEN ANZEIGEN
+    if st.session_state.feedback:
+        st.markdown("### 📊 Gesammeltes Feedback")
+        st.write(st.session_state.feedback)
 
 else:
-    st.info("Herrscher, ladet ein Bild hoch 👁️")
+    st.info("Herrscher, bitte ladet ein Bild hoch 👁️")
