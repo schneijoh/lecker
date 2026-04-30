@@ -6,13 +6,13 @@ import random
 import time
 
 # ---------------------------
-# STATE INIT
+# STATE
 # ---------------------------
 if "opened" not in st.session_state:
     st.session_state.opened = False
 
 # ---------------------------
-# BOOK INTRO SCREEN
+# 📖 BOOK STARTSCREEN
 # ---------------------------
 if not st.session_state.opened:
 
@@ -23,40 +23,48 @@ if not st.session_state.opened:
     }
 
     .book {
-        width: 90vw;
-        height: 85vh;
+        width: 60vw;
+        height: 70vh;
         margin: auto;
-        margin-top: 5vh;
-        background: linear-gradient(90deg, #5a3e1b, #3b2912);
-        border-radius: 20px;
-        box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        margin-top: 10vh;
+        background: linear-gradient(135deg, #d6c1a3, #b89b73);
+        border: 4px solid #5a3e1b;
+        border-radius: 15px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.7);
         display: flex;
-        align-items: center;
-        justify-content: center;
         flex-direction: column;
-        color: #f5e6c8;
+        justify-content: center;
+        align-items: center;
         font-family: serif;
+        color: #3b2a1a;
         text-align: center;
     }
 
     .title {
-        font-size: 40px;
-        margin-bottom: 20px;
+        font-size: 50px;
+        font-weight: bold;
+        letter-spacing: 3px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+        margin-top: 10px;
     }
 
     button {
-        background: #c9a66b !important;
-        color: black !important;
+        margin-top: 30px !important;
+        background: #8b6b3f !important;
+        color: #fff !important;
+        border-radius: 8px !important;
         font-size: 18px !important;
-        border-radius: 10px !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="book">
-        <div class="title">📖 Das Buch des Herrschers 📖</div>
-        <p>Ein altes Wissen liegt verborgen...</p>
+        <div class="title">FUNDGRUBE</div>
+        <div class="subtitle">Altes Wissen, verborgen in der Tiefe der Zeit</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -67,14 +75,14 @@ if not st.session_state.opened:
     st.stop()
 
 # ---------------------------
-# FEUERWERK INTRO (10s)
+# 🎆 FEUERWERK ÜBERGANG
 # ---------------------------
 placeholder = st.empty()
 
-def firework_frame():
-    colors = ["#ff0000", "#00ffcc", "#ffff00", "#ff00ff", "#00ff00"]
+def firework():
+    colors = ["#ffcc00", "#ff6600", "#ffffff", "#ff0000", "#00ffff"]
     html = ""
-    for _ in range(40):
+    for _ in range(30):
         x = random.randint(0, 100)
         y = random.randint(0, 100)
         color = random.choice(colors)
@@ -83,8 +91,8 @@ def firework_frame():
             position:fixed;
             left:{x}vw;
             top:{y}vh;
-            width:10px;
-            height:10px;
+            width:8px;
+            height:8px;
             background:{color};
             border-radius:50%;
             animation: boom 1s ease-out;">
@@ -100,41 +108,55 @@ def firework_frame():
     """
     placeholder.markdown(html, unsafe_allow_html=True)
 
-# 10 Sekunden Feuerwerk nur einmal
 if "firework_done" not in st.session_state:
     st.session_state.firework_done = True
-
-    for _ in range(10):
-        firework_frame()
+    for _ in range(8):
+        firework()
         time.sleep(1)
-
     placeholder.empty()
 
 # ---------------------------
-# APP DESIGN
+# 📖 FUNDGRUBE DESIGN (MAIN APP)
 # ---------------------------
 st.markdown("""
 <style>
 .stApp {
-    background: #e7f5ff;
-    color: #0f172a;
+    background: #e6d3b3; /* altes Papier */
+    color: #2c1f14;
+    font-family: serif;
 }
+
 .block-container {
     text-align: left;
     padding-top: 2rem;
 }
+
+/* Titel */
 h1, h2, h3 {
-    color: #1c7ed6;
+    color: #5a3e1b;
 }
+
+/* Herrscher Stil */
 .herrscher {
     font-size: 22px;
     font-weight: bold;
-    color: #0b7285;
+    color: #3b2a1a;
+}
+
+/* Buttons altmodisch */
+.stButton > button {
+    background-color: #8b6b3f;
+    color: white;
+    border-radius: 6px;
+    border: none;
+}
+.stButton > button:hover {
+    background-color: #6f5330;
 }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("YOLOv8 System")
+st.title("FUNDGRUBE")
 st.markdown('<div class="herrscher">Willkommen, Herrscher 👑</div>', unsafe_allow_html=True)
 
 # ---------------------------
@@ -149,7 +171,7 @@ model = load_model()
 # ---------------------------
 # UPLOAD
 # ---------------------------
-uploaded_file = st.file_uploader("Bild hochladen, Herrscher", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Eintrag in die Fundgrube laden", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
@@ -160,10 +182,10 @@ if uploaded_file is not None:
 
     st.image(results[0].plot(), use_column_width=True)
 
-    st.subheader("Ergebnis, Herrscher:")
+    st.subheader("Deutung des Fundes, Herrscher:")
 
     if len(results[0].boxes) == 0:
-        st.write("👁️ Herrscher, ich vermute etwas Unbekanntes im Bild.")
+        st.write("📜 Herrscher, ich deute: Ein unbekanntes Artefakt der Fundgrube.")
     else:
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
@@ -171,10 +193,10 @@ if uploaded_file is not None:
             label = model.names[cls_id]
 
             if conf >= 0.5:
-                st.write(f"👑 Herrscher: **{label}** ({conf:.2f})")
+                st.write(f"📖 Herrscher, eindeutig erkannt: **{label}** ({conf:.2f})")
             else:
-                st.write(f"🤔 Herrscher, ich vermute: **{label}** ({conf:.2f})")
+                st.write(f"📜 Herrscher, Deutung: vermutlich **{label}** ({conf:.2f})")
 
 else:
-    st.info("Herrscher, bitte ladet ein Bild hoch 👁️")
+    st.info("Herrscher, fügt einen Eintrag zur Fundgrube hinzu 📖")
     
