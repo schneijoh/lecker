@@ -3,32 +3,55 @@ from ultralytics import YOLO
 from PIL import Image
 import numpy as np
 
-# 🎨 Babyblaues Design
+# 🎨 Überraschungs-Design (dark + neon glow)
 st.markdown("""
     <style>
     .stApp {
-        background-color: #e7f5ff;
+        background: linear-gradient(135deg, #0f172a, #020617);
+        color: #e2e8f0;
     }
+
     h1, h2, h3 {
-        color: #1c7ed6;
-        text-align: center;
+        color: #38bdf8;
+        text-align: left;
     }
+
     .herrscher {
-        font-size: 20px;
+        font-size: 22px;
         font-weight: bold;
-        color: #1864ab;
+        color: #facc15;
+        margin-bottom: 20px;
+    }
+
+    /* Glow Effekt */
+    .glow {
+        color: #38bdf8;
+        text-shadow: 0 0 10px #38bdf8, 0 0 20px #0ea5e9;
+    }
+
+    /* Fake Feuerwerk (sanfte Animation) */
+    @keyframes glowPulse {
+        0% { box-shadow: 0 0 5px #38bdf8; }
+        50% { box-shadow: 0 0 25px #38bdf8; }
+        100% { box-shadow: 0 0 5px #38bdf8; }
+    }
+
+    .firework {
+        animation: glowPulse 2s infinite;
+        border-radius: 10px;
+        padding: 10px;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # 👑 Begrüßung
-st.title("YOLOv8 Objekterkennung")
-st.markdown('<p class="herrscher">Moin Herrscher! 👑</p>', unsafe_allow_html=True)
+st.title("YOLOv8 Analyse-System")
+st.markdown('<div class="herrscher">Willkommen, Herrscher 👑</div>', unsafe_allow_html=True)
 
 # 🎆 Feuerwerk Button
-if st.button("🎆 Feuerwerk starten, Herrscher!"):
+if st.button("🎆 Feuerwerk aktivieren, Herrscher"):
+    st.markdown('<div class="firework">✨ Das System feiert Euch, Herrscher ✨</div>', unsafe_allow_html=True)
     st.balloons()
-    st.success("Ein Feuerwerk zu Ehren des Herrschers! 🎇")
 
 # Modell laden
 @st.cache_resource
@@ -37,37 +60,33 @@ def load_model():
 
 model = load_model()
 
-# Bild hochladen
-uploaded_file = st.file_uploader("Lade ein Bild hoch, Herrscher", type=["jpg", "jpeg", "png"])
+# Upload
+uploaded_file = st.file_uploader("Bild hochladen, Herrscher", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="Euer Bild, Herrscher", use_column_width=True)
+    st.image(image, caption="Euer Bild", use_column_width=True)
 
     img_array = np.array(image)
 
-    # YOLO Vorhersage
     results = model(img_array)
 
-    # Ergebnisbild
     result_img = results[0].plot()
-    st.image(result_img, caption="Analyse für den Herrscher", use_column_width=True)
+    st.image(result_img, caption="Analyse", use_column_width=True)
 
     st.subheader("Ergebnis, Herrscher:")
 
-    # ❗ Immer etwas sagen
+    # ❗ Immer eine Vermutung
     if len(results[0].boxes) == 0:
-        st.warning("Herrscher, ich bin unsicher… aber ich vermute, dass ich das Objekt nicht klar erkennen kann 🤔")
+        st.write("👁️ Herrscher, meine Vermutung: Es könnte ein Objekt außerhalb meines Trainings sein, möglicherweise ein ungewöhnlicher Gegenstand.")
     else:
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
             conf = float(box.conf[0])
             label = model.names[cls_id]
 
-            if conf < 0.5:
-                st.write(f"🤔 Herrscher, ich bin mir nicht sicher… aber ich tippe auf **{label}** ({conf:.2f})")
-            else:
-                st.write(f"👑 Herrscher, hier wurde sehr wahrscheinlich **{label}** erkannt ({conf:.2f})")
+            # KEIN unsicher mehr – nur Vermutung
+            st.write(f"👁️ Herrscher, meine Analyse: Dies ist vermutlich **{label}** ({conf:.2f})")
 
 else:
-    st.info("Herrscher, bitte ladet ein Bild hoch 👀")
+    st.info("Herrscher, ladet ein Bild hoch, damit ich analysieren kann 👁️")
