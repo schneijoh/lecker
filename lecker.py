@@ -14,8 +14,11 @@ if "opened" not in st.session_state:
 if "loaded" not in st.session_state:
     st.session_state.loaded = False
 
+if "feedback_list" not in st.session_state:
+    st.session_state.feedback_list = []
+
 # ---------------------------
-# 📦 LOADING SCREEN (kein Code sichtbar!)
+# ⏳ LOADING SCREEN
 # ---------------------------
 if not st.session_state.loaded:
 
@@ -42,7 +45,7 @@ if not st.session_state.loaded:
     st.rerun()
 
 # ---------------------------
-# 📖 BOOK START
+# 📖 BOOK STARTSCREEN
 # ---------------------------
 if not st.session_state.opened:
 
@@ -96,7 +99,7 @@ if not st.session_state.opened:
     st.stop()
 
 # ---------------------------
-# 🎆 FUNKTIONEN
+# 🎆 FEUERWERK
 # ---------------------------
 firework_placeholder = st.empty()
 
@@ -129,6 +132,9 @@ def firework():
     """
     firework_placeholder.markdown(html, unsafe_allow_html=True)
 
+# ---------------------------
+# 🎆 SPECIAL TEXTS
+# ---------------------------
 def love_text():
     st.markdown("""
     <div style="
@@ -200,16 +206,7 @@ st.title("FUNDGRUBE")
 st.markdown('<div class="herrscher">Willkommen, Herrscher 👑</div>', unsafe_allow_html=True)
 
 # ---------------------------
-# MODEL
-# ---------------------------
-@st.cache_resource
-def load_model():
-    return YOLO("yolov8n.pt")
-
-model = load_model()
-
-# ---------------------------
-# 🎮 EXTRA BUTTONS
+# 🎮 BUTTONS
 # ---------------------------
 col1, col2 = st.columns(2)
 
@@ -223,7 +220,16 @@ with col2:
         sound_text()
 
 # ---------------------------
-# UPLOAD + YOLO
+# 🤖 MODEL
+# ---------------------------
+@st.cache_resource
+def load_model():
+    return YOLO("yolov8n.pt")
+
+model = load_model()
+
+# ---------------------------
+# 📤 UPLOAD + ERKENNUNG
 # ---------------------------
 uploaded_file = st.file_uploader("Eintrag in die Fundgrube", type=["jpg", "jpeg", "png"])
 
@@ -237,8 +243,12 @@ if uploaded_file is not None:
 
     st.subheader("Deutung, Herrscher:")
 
+    predictions = []
+
     if len(results[0].boxes) == 0:
-        st.write("📜 Herrscher, unbekannter Fund.")
+        text = "📜 Herrscher, unbekannter Fund."
+        st.write(text)
+        predictions.append(text)
     else:
         for box in results[0].boxes:
             cls_id = int(box.cls[0])
@@ -246,9 +256,30 @@ if uploaded_file is not None:
             label = model.names[cls_id]
 
             if conf >= 0.5:
-                st.write(f"📖 eindeutig: **{label}** ({conf:.2f})")
+                text = f"📖 eindeutig: **{label}** ({conf:.2f})"
             else:
-                st.write(f"📜 vermutlich: **{label}** ({conf:.2f})")
+                text = f"📜 vermutlich: **{label}** ({conf:.2f})"
+
+            st.write(text)
+            predictions.append(text)
+
+    # ---------------------------
+    # 🧠 FEEDBACK SYSTEM
+    # ---------------------------
+    st.markdown("### 🧠 Feedback, Herrscher")
+
+    feedback = st.text_input("Was war wirklich richtig?")
+
+    if st.button("Feedback speichern"):
+        st.session_state.feedback_list.append({
+            "prediction": predictions,
+            "feedback": feedback
+        })
+        st.success("Feedback gespeichert, Herrscher 👑")
+
+    if st.session_state.feedback_list:
+        st.markdown("### 📚 Archiv der Fundgrube")
+        st.write(st.session_state.feedback_list)
 
 else:
     st.info("Herrscher, bitte einen Fund einreichen 📖")
